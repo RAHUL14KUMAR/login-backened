@@ -9,7 +9,7 @@ const generateJwt = (id) => {
 };
 async function invalidateToken(user) {
     await login.deleteOne({ _id: user._id });
-  }
+}
 const router=express.Router();
 router.route('/login')
 .post(async(req,res)=>{
