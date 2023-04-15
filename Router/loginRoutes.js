@@ -7,6 +7,9 @@ const protect=require('../middlewares/authMiddleware');
 const generateJwt = (id) => {
     return jwt.sign({id} , process.env.JWT_SECRET, { expiresIn: "30m" });
 };
+async function invalidateToken(user) {
+    await login.deleteOne({ _id: user._id });
+  }
 const router=express.Router();
 router.route('/login')
 .post(async(req,res)=>{
@@ -85,18 +88,11 @@ router.route('/loginStatus')
     }
 })
 router.route('/logout')
-.get(protect,async(req,res)=>{
+.post(protect,async(req,res)=>{
     try{
-        const token=req.headers.authorization.split(' ')[1];
-        const user=login.findOne({token});
-        if(user){
-            // token.destroy();
-            // res.clearCookie(token);
-            res.status(401).send(false);
-        }
-        if(!user){
-            res.status(200).json({message:"user is not found"});
-        }
+        const user = req.user;
+       await invalidateToken(user);
+        res.sendStatus(200);
     }catch(error){
         res.status(500).send('Internal server error');
     }
